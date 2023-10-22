@@ -7,6 +7,9 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
+
+	"golang.org/x/net/http2"
 )
 
 func main() {
@@ -16,18 +19,41 @@ func main() {
 	http.HandleFunc("/example", getExample)
 
 	fmt.Println("Hello server")
+	serverAddress := fmt.Sprintf("%s:%s", spec.ServerAddress, spec.ServerPort)
 
-	server_add := fmt.Sprintf("%s:%s", spec.ServerAddress, spec.ServerPort)
-	// fmt.Printf("Server listening at %s\n", server_add)
+	var server http.Server = http.Server{
+		Addr: serverAddress,
+	}
 
-	err := http.ListenAndServe(server_add, nil)
+	var err error
+
+	// make server support http2 requests
+	err = http2.ConfigureServer(&server, &http2.Server{})
+	handleError(err, "unable to configure server to http2", true)
+
+	fmt.Printf("Server listening at %s\n", serverAddress)
+
+	executable, err := os.Executable()
+	handleError(err, "unable to get executable path", true)
+
+	exDir := filepath.Dir(executable)
+	err = server.ListenAndServeTLS(fmt.Sprintf("%s/server.crt", exDir), fmt.Sprintf("%s/server.key", exDir))
 
 	if errors.Is(err, http.ErrServerClosed) {
 		fmt.Println("Server closed")
 	}
-	if err != nil {
-		fmt.Printf("server start error: %v\n", err)
-		os.Exit(1)
+	handleError(err, "server error", true)
+}
+
+// Basic error handler
+func handleError(e error, msg string, exit bool) {
+	if e != nil {
+		fmt.Printf("error: %s\n", msg)
+		fmt.Println(e)
+
+		if exit {
+			os.Exit(1)
+		}
 	}
 }
 

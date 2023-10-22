@@ -19,3 +19,14 @@ outdir:
 
 clean:
 	@rm ${BIN_DIR}/*
+
+keys: # ${BIN_DIR}/server.key ${BIN_DIR}/server.crt
+	openssl req \
+		-new \
+		-newkey rsa:4096 \
+		-days 365 \
+		-nodes \
+		-x509 \
+		-subj "/C=SG/ST=Singapore/L=Singapore/O=Default/CN=https2-rapid-reset-example" \
+		-keyout ${BIN_DIR}/server.key \
+		-out ${BIN_DIR}/server.crt
