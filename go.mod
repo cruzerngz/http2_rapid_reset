@@ -6,9 +6,10 @@ module http2-rapid-reset
 // a build image that does not have the above go versions!
 //
 // https://groups.google.com/g/golang-announce/c/iNNxDTCjZvo
-go 1.21
+go 1.19
 
 require (
+	github.com/davecgh/go-spew v1.1.1 // indirect
 	golang.org/x/net v0.17.0 // indirect
 	golang.org/x/text v0.13.0 // indirect
 )

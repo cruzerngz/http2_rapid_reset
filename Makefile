@@ -6,6 +6,9 @@ BIN_DIR=./bin
 
 default: build
 
+# for running locally
+local: build
+
 # build all files in ./cmd
 build: outdir
 	@for path in ${BIN_PATHS}; 			\
@@ -30,3 +33,11 @@ keys: # ${BIN_DIR}/server.key ${BIN_DIR}/server.crt
 		-subj "/C=SG/ST=Singapore/L=Singapore/O=Default/CN=https2-rapid-reset-example" \
 		-keyout ${BIN_DIR}/server.key \
 		-out ${BIN_DIR}/server.crt
+
+# docker stuffs
+docker_build_data:
+	docker build -t build -f docker/build.Dockerfile .
+
+# for running inside containers
+image: docker_build_data
+	docker compose build

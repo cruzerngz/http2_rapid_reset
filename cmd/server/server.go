@@ -8,28 +8,49 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"time"
 
 	"golang.org/x/net/http2"
+	"golang.org/x/net/http2/h2c"
 )
 
 func main() {
 
-	http.HandleFunc("/", getRoot)
-	http.HandleFunc("/hello", getHello)
-	http.HandleFunc("/example", getExample)
+	spec.CtrlcHandler()
+
+	var err error
+
+	// http.HandleFunc("/", getRoot)
+	// http.HandleFunc("/hello", getHello)
+	// http.HandleFunc("/example", getExample)
 
 	fmt.Println("Hello server")
 	serverAddress := fmt.Sprintf("%s:%s", spec.ServerAddress, spec.ServerPort)
 
+	// server handler
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, "HTTPS server response\n")
+
+		fmt.Println(r.Proto)
+		t := time.Now()
+		fmt.Printf("[%v] Received %v request on %v with length %v\n",
+			t,
+			r.Method,
+			r.URL,
+			r.ContentLength,
+		)
+		// spew.Dump(&r)
+
+	})
+
 	var server http.Server = http.Server{
-		Addr: serverAddress,
+		Addr:    serverAddress,
+		Handler: h2c.NewHandler(handler, &http2.Server{}),
 	}
 
-	var err error
-
-	// make server support http2 requests
+	// server config (http2 stream configs)
 	err = http2.ConfigureServer(&server, &http2.Server{})
-	handleError(err, "unable to configure server to http2", true)
+	handleError(err, "unable to configure server", true)
 
 	fmt.Printf("Server listening at %s\n", serverAddress)
 
@@ -37,7 +58,10 @@ func main() {
 	handleError(err, "unable to get executable path", true)
 
 	exDir := filepath.Dir(executable)
-	err = server.ListenAndServeTLS(fmt.Sprintf("%s/server.crt", exDir), fmt.Sprintf("%s/server.key", exDir))
+	err = server.ListenAndServeTLS(
+		fmt.Sprintf("%s/server.crt", exDir),
+		fmt.Sprintf("%s/server.key", exDir),
+	)
 
 	if errors.Is(err, http.ErrServerClosed) {
 		fmt.Println("Server closed")

@@ -1,0 +1,39 @@
+version: "3"
+
+services:
+  server:
+    image: go_server
+    container_name: server
+    # restart: on-failure
+    build:
+      context: .
+      dockerfile: ./docker/server.Dockerfile
+
+    networks:
+      - internal
+
+    ports:
+      - "4062:4062"
+
+    expose:
+      - "4062:4062"
+    # expose:
+    #   - "127.0.0.1:4062"
+      # args:
+        # - teloxide_token=${TELOXIDE_TOKEN:?NO_TELOXIDE_API_TOKEN}
+        # - rust_log=${RUST_LOG:?NO_RUST_LOG_LEVEL}
+
+  client:
+    image: go_client
+    container_name: client
+
+    build:
+      context: .
+      dockerfile: ./docker/client.Dockerfile
+
+    networks:
+      - internal
+
+
+networks:
+  internal:
