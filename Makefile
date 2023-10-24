@@ -23,7 +23,7 @@ outdir:
 clean:
 	@rm ${BIN_DIR}/*
 
-keys: # ${BIN_DIR}/server.key ${BIN_DIR}/server.crt
+keys: outdir
 	openssl req \
 		-new \
 		-newkey rsa:4096 \
@@ -38,6 +38,6 @@ keys: # ${BIN_DIR}/server.key ${BIN_DIR}/server.crt
 docker_build_data:
 	docker build -t build -f docker/build.Dockerfile .
 
-# for running inside containers
+# docker compose
 image: docker_build_data
 	docker compose build
