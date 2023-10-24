@@ -1,3 +1,6 @@
+// Client used when running locally.
+// Make sure that this program is compiled with
+// go version < 1.20.10 or < 1.21.3
 package main
 
 import (

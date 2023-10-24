@@ -31,7 +31,21 @@ func CtrlcHandler() {
 	}()
 }
 
+// JSON-stringify a struct.
+// Struct needs json tags
 func PrettyPrint(i interface{}) string {
 	s, _ := json.MarshalIndent(i, "", "    ")
 	return string(s)
+}
+
+// Basic error handler
+func HandleError(e error, msg string, exit bool) {
+	if e != nil {
+		fmt.Printf("error: %s\n", msg)
+		fmt.Println(e)
+
+		if exit {
+			os.Exit(1)
+		}
+	}
 }
