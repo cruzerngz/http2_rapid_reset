@@ -14,10 +14,6 @@ func main() {
 
 	var err error
 
-	// http.HandleFunc("/", getRoot)
-	// http.HandleFunc("/hello", getHello)
-	// http.HandleFunc("/example", getExample)
-
 	fmt.Println("Hello server")
 	serverAddress := fmt.Sprintf("%s:%s", spec.ServerAddress, spec.ServerPort)
 
@@ -40,20 +36,3 @@ func main() {
 	spec.HandleError(err, "Error starting server", true)
 
 }
-
-// func getRoot(w http.ResponseWriter, r *http.Request) {
-// 	fmt.Printf("Received request")
-// 	fmt.Printf("%#v\n", r)
-// 	io.WriteString(w, "Welcome to the demo server!")
-// }
-
-// func getHello(w http.ResponseWriter, r *http.Request) {
-// 	fmt.Printf("got /hello request\n")
-// 	io.WriteString(w, "Hello, HTTP!\n")
-// }
-
-// func getExample(w http.ResponseWriter, r *http.Request) {
-// 	fmt.Printf("got /exmple request\n")
-// 	fmt.Printf("%#v\n", r)
-// 	io.WriteString(w, "Hello, HTTP!\n")
-// }

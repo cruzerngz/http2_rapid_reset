@@ -10,6 +10,10 @@ import (
 	"time"
 )
 
+// assume the max requests per stream is 100
+// so we send 100 simultaneous requests and reset
+const REQUESTS_PER_STREAM int = 100
+
 // When the loopcounter loops (rolls over from `size` to 0),
 // `true` is passed, otherwise, false is passed.
 type LoopCounter struct {
@@ -22,7 +26,6 @@ func NewLoopCounter(size uint) LoopCounter {
 		size: size,
 		Curr: 0,
 	}
-
 }
 
 // Advances the counter by 1.
@@ -77,10 +80,6 @@ func (client *Client) RapidResetRequests(
 
 	var loopCounter = NewLoopCounter(5)
 
-	// assume the max requests per stream is 100
-	// so we send 100 simultaneous requests and reset the first one
-	var req_per_stream int = 100
-
 	var startTime time.Time = time.Now()
 
 	// ticks every period: 1 / frequency
@@ -104,14 +103,14 @@ func (client *Client) RapidResetRequests(
 			req = req.WithContext(streamCtx)
 
 			// send out requests in batches
-			for i := 0; i < req_per_stream; i++ {
+			for i := 0; i < REQUESTS_PER_STREAM; i++ {
 				wg.Add(1)
 
 				go client.request(req, streamCtx, &wg)
 			}
 
 			// upd8
-			ch <- uint(req_per_stream)
+			ch <- uint(REQUESTS_PER_STREAM)
 
 			// perform the stream reset after a short interval
 			// gives the server some time to perform some computation
@@ -120,8 +119,8 @@ func (client *Client) RapidResetRequests(
 
 		}()
 
-		// wait for `req_per_stream` periods
-		for i := 0; i < req_per_stream; i++ {
+		// wait for `REQUESTS_PER_STREAM` periods
+		for i := 0; i < REQUESTS_PER_STREAM; i++ {
 			<-ticker.C
 		}
 

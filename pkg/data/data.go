@@ -1,4 +1,5 @@
 // Common data structures
+// Not used
 
 package data
 
@@ -12,5 +13,3 @@ type BodyMetric struct {
 	Cadence float32   `json:"cadence"`
 	Temp    int32     `json:"temperature"`
 }
-
-// var x = time.Time();
