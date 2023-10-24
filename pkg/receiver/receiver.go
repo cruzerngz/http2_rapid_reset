@@ -55,7 +55,7 @@ func (server *Server) Start() error {
 
 // Main handler, invoked on server request
 func serverHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "HTTPS server response\n")
+	fmt.Fprintf(w, "Demo http2 server response\n")
 
 	fmt.Println(r.Proto)
 	t := time.Now()
@@ -65,6 +65,7 @@ func serverHandler(w http.ResponseWriter, r *http.Request) {
 		r.URL,
 		r.ContentLength,
 	)
+
 	// spew.Dump(&r)
 
 }

