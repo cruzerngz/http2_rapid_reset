@@ -29,7 +29,6 @@ func main() {
 	addr := fmt.Sprintf("https://server:%s", spec.ServerPort)
 
 	var client sender.Client = *sender.NewClient(addr)
-	_ = client
 
 	client.RapidResetRequests(
 		*requestFreq,

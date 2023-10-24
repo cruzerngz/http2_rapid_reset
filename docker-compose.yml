@@ -9,6 +9,8 @@ services:
       context: .
       dockerfile: ./docker/server.Dockerfile
 
+    cpu_count: 8
+
     networks:
       - internal
 
@@ -30,6 +32,8 @@ services:
     build:
       context: .
       dockerfile: ./docker/client.Dockerfile
+
+    cpu_count: 1
 
     networks:
       - internal
