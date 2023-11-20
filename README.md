@@ -11,8 +11,6 @@ make build
 # start the server in the background, or another terminal
 ./bin/server &
 ./bin/localclient -duration 10s -frequency 10000
-
-
 ```
 
 ## Running in container
@@ -22,7 +20,8 @@ docker compose up
 # enter client
 docker exec -it client sh
 # perform stuff
-client -duration 10s -frequency 10000 # example
+client -duration 10s -frequency 10000 # rapid reset example
+ddosclient -duration 10s -frequency 10000 # normal ddos example
 ```
 
 ## Explanation
